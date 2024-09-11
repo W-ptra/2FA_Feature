@@ -21,7 +21,8 @@ func (s *Server) run() error{
 	fs := http.FileServer(http.Dir("./public"))
 
 	router.Handle("/public/",http.StripPrefix("/public/",fs))
-	router.HandleFunc("/",controller.Root)	
+	router.HandleFunc("GET /login",controller.GetLogin)	
+	router.HandleFunc("GET /register",controller.GetRegister)
 
 	server := http.Server{
 		Addr: s.addr,

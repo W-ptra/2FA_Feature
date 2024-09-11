@@ -4,6 +4,10 @@ import (
 	"net/http"
 )
 
-func Root(w http.ResponseWriter,r *http.Request){
-	http.ServeFile(w,r,"./public/index.html")
+func GetLogin(w http.ResponseWriter,r *http.Request){
+	http.ServeFile(w,r,"./public/login.html")
+}
+
+func GetRegister(w http.ResponseWriter,r *http.Request){
+	http.ServeFile(w,r,"./public/register.html")
 }
