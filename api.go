@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
-	"github.com/W-ptra/2FA-Feature/Controller"
+	"github.com/W-ptra/2FA-Feature/controller"
 )
 
 type Server struct{
@@ -22,7 +22,9 @@ func (s *Server) run() error{
 
 	router.Handle("/public/",http.StripPrefix("/public/",fs))
 	router.HandleFunc("GET /login",controller.GetLogin)	
+	router.HandleFunc("POST /login",controller.PostLogin)
 	router.HandleFunc("GET /register",controller.GetRegister)
+	router.HandleFunc("POST /register",controller.PostRegister)
 
 	server := http.Server{
 		Addr: s.addr,

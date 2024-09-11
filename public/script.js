@@ -5,7 +5,7 @@ async function login(){
     if (email === "" || password === "")
         return document.getElementById("message").textContent = "Email or Passworld can't empty";
 
-    // fetch to api /login
+    // fetch to /login
     document.getElementById("message").textContent = "";
 }
 
@@ -21,6 +21,6 @@ async function register(){
     if (password !== confirmPassword)
         return document.getElementById("message").textContent = "Passworld and Confirm Passwird doesn't match";
 
-    //fetch to api /register
+    //fetch to /register
     document.getElementById("message").textContent = "";
 }
