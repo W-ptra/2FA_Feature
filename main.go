@@ -15,6 +15,10 @@ func main(){
 		fmt.Println("error migrating database",err)
 	}
 
+	rds,errorr := database.GetRedisConnection()
+	fmt.Println(rds)
+	fmt.Println(errorr)
+
 	server := NewServer("0.0.0.0:8001")
 	server.run()
 }
