@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"github.com/W-ptra/2FA-Feature/database"
+	"github.com/W-ptra/2FA-Feature/service"
 )
 
 type LoginUser struct{
@@ -34,6 +36,26 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
+	db,err := database.GetConnection()
+	if err!=nil{
+		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		return
+	}
+
+	userDB,errors := database.GetUserByEmail(db,user.Email)
+	if errors!=nil{
+		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		return
+	}
+
+	isMatch := service.ComparePassword(userDB.Password,user.Password)
+	if !isMatch{
+		w.Header().Set("Content-Type","application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"Message":"Wrong Password"})
+		return
+	}
+
 	log.Println(user)
 
 	w.Header().Set("Content-Type","application/json")
@@ -58,6 +80,24 @@ func PostRegister(w http.ResponseWriter,r *http.Request){
 
 	if user.Password != user.ConfirmPassword{
 		http.Error(w,"password and confirm password doesn't match",http.StatusBadRequest)
+		return
+	}
+
+	hashedPassword := service.HashPassword(user.Password)
+	newUser := database.User{
+		Name: user.Name,
+		Email: user.Email,
+		Password: hashedPassword,
+	}
+	db,err := database.GetConnection()
+	if err!=nil{
+		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		return
+	}
+	
+	err = database.CreateNewUser(db,newUser)
+	if err!=nil{
+		http.Error(w,"something went wrong",http.StatusInternalServerError)
 		return
 	}
 
