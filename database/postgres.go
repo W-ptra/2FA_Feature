@@ -5,7 +5,7 @@ import (
 )
 
 func GetConnection()(*gorm.DB,error){
-	dsn := "host=localhost user=root password=root dbname=root port=800 sslmode=disable TimeZoneAsia/Shanghai"
+	dsn := "host=localhost user=root password=root dbname=twofa_database port=8000 sslmode=disable TimeZone=Asia/Shanghai"
 	db,err := gorm.Open(postgres.Open(dsn),&gorm.Config{})
 
 	if err!=nil{

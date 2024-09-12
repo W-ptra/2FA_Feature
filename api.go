@@ -32,6 +32,5 @@ func (s *Server) run() error{
 	}
 
 	log.Printf("Server addr %v",s.addr)
-
 	return server.ListenAndServe()
 }

@@ -42,6 +42,8 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
+	log.Println(user)
+
 	userDB,errors := database.GetUserByEmail(db,user.Email)
 	if errors!=nil{
 		http.Error(w,"something went wrong",http.StatusInternalServerError)
@@ -55,8 +57,6 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 		json.NewEncoder(w).Encode(map[string]string{"Message":"Wrong Password"})
 		return
 	}
-
-	log.Println(user)
 
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
@@ -83,6 +83,7 @@ func PostRegister(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
+	log.Println(user)
 	hashedPassword := service.HashPassword(user.Password)
 	newUser := database.User{
 		Name: user.Name,
@@ -101,7 +102,6 @@ func PostRegister(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
-	log.Println(user)
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"Message":"Register Sucessfully"})
