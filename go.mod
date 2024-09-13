@@ -1,6 +1,8 @@
 module github.com/W-ptra/2FA-Feature
 
-go 1.22.3
+go 1.23
+
+toolchain go1.23.1
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -11,7 +13,9 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/redis/go-redis/v9 v9.6.1 // indirect
+	github.com/resend/resend-go/v2 v2.12.0 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/text v0.18.0 // indirect

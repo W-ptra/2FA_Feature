@@ -58,9 +58,16 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
+	randomNumber := service.CreateOTPNumber()
+	err = service.SendEmail(user.Email,randomNumber)
+	if err != nil{
+		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"Message":"Login Sucessfully"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"Message":"Login Sucessfully","otp":randomNumber})
 }
 
 func PostRegister(w http.ResponseWriter,r *http.Request){
@@ -102,7 +109,5 @@ func PostRegister(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
-	w.Header().Set("Content-Type","application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"Message":"Register Sucessfully"})
+	http.Redirect(w,r,"/login",http.StatusSeeOther)
 }
