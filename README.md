@@ -11,5 +11,5 @@ Login and Register system integrated with two factor authentication (Password an
    
 5. Valid OTP indicate the login process is Successful
    
-![img](https://drive.google.com/uc?export=view&id=1ATMJqv0aGiVRi2UM-3ia6XqzH8ku6v0n)   
+![img](https://drive.google.com/uc?export=view&id=11KeX7g5MHOQ1taP7rueTQWGH6-F47Q-g)   
    
