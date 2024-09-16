@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
+
 	"github.com/W-ptra/2FA-Feature/database"
 	"github.com/W-ptra/2FA-Feature/service"
 )
@@ -22,7 +24,8 @@ type RegisterUser struct{
 }
 
 type Otp struct{
-	Code	string			`json:"Code"`
+	Email 	string			`json:"email"`
+	Code	string			`json:"code"`
 }
 
 func PostLogin(w http.ResponseWriter,r *http.Request){
@@ -61,9 +64,24 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 		json.NewEncoder(w).Encode(map[string]string{"Message":"Wrong Password"})
 		return
 	}
-
+	
 	randomNumber := service.CreateOTPNumber()
 	err = service.SendEmail(user.Email,randomNumber)
+	
+	if err != nil{
+		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		return
+	}
+	
+	isOTPExist,_ := database.GetOTP(user.Email)
+	
+	if isOTPExist!=""{
+		w.Header().Set("Content-Type","application/json")
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(map[string]interface{}{"Message":"OTP Already been sent, check your email"})
+	}
+
+	err = database.SetOTP(user.Email,strconv.Itoa(randomNumber))
 	if err != nil{
 		http.Error(w,"something went wrong",http.StatusInternalServerError)
 		return
@@ -130,10 +148,29 @@ func PostOtp(w http.ResponseWriter,r *http.Request){
 		http.Error(w,"Bad request",http.StatusBadRequest)
 		return
 	}
+	log.Println(otp)
+	rdsOTP,err := database.GetOTP(otp.Email)
+	if err != nil{
+		log.Println(err)
+		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		return
+	}
+	
+	if rdsOTP == ""{
+		w.Header().Set("Content-Type","application/json")
+		w.WriteHeader(http.StatusConflict)
+		json.NewEncoder(w).Encode(map[string]interface{}{"Message":"No OTP been issue with corresponding email, or might expired"})
+		return
+	}
 
-	//check otp code at redis
+	if otp.Code != rdsOTP{
+		w.Header().Set("Content-Type","application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{"Message":"Wrong OTP Code"})
+		return
+	}
 
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{"Message":otp.Code})
+	json.NewEncoder(w).Encode(map[string]interface{}{"Message":"OTP Code is Correct,Welcome"})
 }

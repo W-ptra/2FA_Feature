@@ -2,8 +2,10 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
+
 	"github.com/redis/go-redis/v9"
 )
 
@@ -22,20 +24,31 @@ func GetRedisConnection()(*redis.Client,error){
 	return rdb,nil
 }
 
-func SetOTP(rdb *redis.Client,email,otp string)error{
+func SetOTP(email,otp string)error{
+	rdb,err := GetRedisConnection()
+	if err != nil {
+        return err
+    }
 	ctx := context.Background()
-	err := rdb.Set(ctx,email, otp, 2*time.Minute).Err()
+	err = rdb.Set(ctx,email, otp, 4*time.Minute).Err()
     if err != nil {
         return err
     }
 	return nil
 }
 
-func CheckOTP(rdb *redis.Client,email string)(string,error){
-	ctx := context.Background()
-	otp,err := rdb.Get(ctx,email).Result()
+func GetOTP(email string)(string,error){
+	rdb,err := GetRedisConnection()
 	if err != nil {
+		fmt.Println("11",err)
         return "",err
     }
+	ctx := context.Background()
+	otp,err := rdb.Get(ctx,email).Result()
+	if err == redis.Nil {
+        return "",err
+    } else if err != nil {
+		return "",err
+	}
 	return otp,nil
 }
