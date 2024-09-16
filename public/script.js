@@ -19,7 +19,7 @@ async function login(){
     })
     const result = await respond.json()
     console.log(result)
-    if (result.Message === "Login Sucessfully" && respond.ok){
+    if (result.Message === "OTP has been sent, please chek your email" && respond.ok){
         document.getElementById("otp_email_label").textContent = email;
         document.getElementById("otp_form").style = "display:inherite;"
         localStorage.setItem("email",email);

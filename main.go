@@ -8,16 +8,18 @@ import (
 func main(){
 	db,err := database.GetConnection()
 	if err!=nil{
-		fmt.Println("error connecting database",err)
+		fmt.Println("error connecting to database",err)
 	}
 	err = db.AutoMigrate(&database.User{})
 	if err!=nil{
 		fmt.Println("error migrating database",err)
 	}
 
-	rds,errorr := database.GetRedisConnection()
+	rds,err := database.GetRedisConnection()
 	fmt.Println(rds)
-	fmt.Println(errorr)
+	if err!=nil{
+		fmt.Println("error connecting to redis",err)
+	}
 
 	server := NewServer("0.0.0.0:8001")
 	server.run()

@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
 	"github.com/W-ptra/2FA-Feature/database"
 	"github.com/W-ptra/2FA-Feature/service"
 )
@@ -89,7 +88,7 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{"Message":"Login Sucessfully","otp":randomNumber})
+	json.NewEncoder(w).Encode(map[string]interface{}{"Message":"OTP has been sent, please chek your email"})
 }
 
 func PostRegister(w http.ResponseWriter,r *http.Request){

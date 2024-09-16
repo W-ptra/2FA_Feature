@@ -2,10 +2,8 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
-
 	"github.com/redis/go-redis/v9"
 )
 
@@ -16,11 +14,10 @@ func GetRedisConnection()(*redis.Client,error){
 		DB: 0,
 	})
 	ctx := context.Background()
-	pong,err := rdb.Ping(ctx).Result()
+	_,err := rdb.Ping(ctx).Result()
 	if err != nil{
 		return nil,err
 	}
-	log.Println("connected to redis: ",pong)
 	return rdb,nil
 }
 
@@ -34,13 +31,13 @@ func SetOTP(email,otp string)error{
     if err != nil {
         return err
     }
+	log.Printf("Redis: save OTP %v with key %v\n",otp,email);
 	return nil
 }
 
 func GetOTP(email string)(string,error){
 	rdb,err := GetRedisConnection()
 	if err != nil {
-		fmt.Println("11",err)
         return "",err
     }
 	ctx := context.Background()
