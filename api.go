@@ -25,6 +25,7 @@ func (s *Server) run() error{
 	router.HandleFunc("POST /login",controller.PostLogin)
 	router.HandleFunc("GET /register",controller.GetRegister)
 	router.HandleFunc("POST /register",controller.PostRegister)
+	router.HandleFunc("POST /otp",controller.PostOtp)
 
 	server := http.Server{
 		Addr: s.addr,

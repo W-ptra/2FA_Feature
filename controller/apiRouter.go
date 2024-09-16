@@ -21,6 +21,10 @@ type RegisterUser struct{
 	ConfirmPassword	string 	`json:"confirmPassword"`
 }
 
+type Otp struct{
+	Code	string			`json:"Code"`
+}
+
 func PostLogin(w http.ResponseWriter,r *http.Request){
 	body,_ := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -110,4 +114,26 @@ func PostRegister(w http.ResponseWriter,r *http.Request){
 	}
 
 	http.Redirect(w,r,"/login",http.StatusSeeOther)
+}
+
+func PostOtp(w http.ResponseWriter,r *http.Request){
+	body,_ := io.ReadAll(r.Body)
+	defer r.Body.Close()
+
+	var otp Otp
+	if err:=json.Unmarshal(body,&otp); err!=nil{
+		http.Error(w,"Bad request",http.StatusBadRequest)
+		return
+	}
+
+	if otp.Code == ""{
+		http.Error(w,"Bad request",http.StatusBadRequest)
+		return
+	}
+
+	//check otp code at redis
+
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{"Message":otp.Code})
 }
