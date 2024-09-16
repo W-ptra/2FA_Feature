@@ -1,4 +1,4 @@
-# 2FA_Golang
+# Two_Factor_Authentication
 Login and Register system integrated with two factor authentication (Password and Email), where user is required to input the 4 digit OTP code sent by system to their email which will be expired in 4 minutes. This project using Golang net/http standard library of version 1.22, PostgreSQL, REDIS, and Resend for email notification.
 # Feature Showcase
 1. Login Form
