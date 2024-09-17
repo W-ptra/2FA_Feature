@@ -2,19 +2,26 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os"
 	"time"
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 )
 
 func GetRedisConnection()(*redis.Client,error){
+	err := godotenv.Load()
+	if err!=nil{
+		log.Println("error loading environment variable",err)
+	}
 	rdb := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: fmt.Sprintf("%v:%v",os.Getenv("REDIS_HOST"),os.Getenv("REDIS_PORT")),
 		Password: "",
 		DB: 0,
 	})
 	ctx := context.Background()
-	_,err := rdb.Ping(ctx).Result()
+	_,err = rdb.Ping(ctx).Result()
 	if err != nil{
 		return nil,err
 	}

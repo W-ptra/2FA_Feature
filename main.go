@@ -2,10 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"github.com/joho/godotenv"
 	"github.com/W-ptra/2FA-Feature/database"
 )
 
 func main(){
+	err := godotenv.Load()
+	if err!=nil{
+		fmt.Println("error loading environment variable",err)
+	}
 	db,err := database.GetConnection()
 	if err!=nil{
 		fmt.Println("error connecting to database",err)
@@ -21,6 +27,7 @@ func main(){
 		fmt.Println("error connecting to redis",err)
 	}
 
-	server := NewServer("0.0.0.0:8001")
+	addr := fmt.Sprintf("%v:%v",os.Getenv("HOST"),os.Getenv("PORT"))
+	server := NewServer(addr)
 	server.run()
 }
