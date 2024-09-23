@@ -16,7 +16,8 @@ Login and Register system integrated with two factor authentication (Password an
 # Prerequisite
 1. Have PostgreSQL & Redis installed and run on your machine
 2. Create new database 
-3. Edit ``.env`` by applying your configuration  
+3. Edit ``.env`` by applying your configuration
+4. For ``RESEND_API_KEY`` can be obtained by sing in into https://resend.com/
 # How To Use
 1. Clone this repo by run following script
 ```
