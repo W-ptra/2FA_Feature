@@ -13,3 +13,21 @@ Login and Register system integrated with two factor authentication (Password an
    
 ![img](https://drive.google.com/uc?export=view&id=11KeX7g5MHOQ1taP7rueTQWGH6-F47Q-g)   
    
+# Prerequisite
+1. Have PostgreSQL & Redis installed and run on your machine
+2. Create new database 
+3. Edit ``.env`` by applying your configuration  
+# How To Use
+1. Clone this repo by run following script
+```
+git clone https://github.com/W-ptra/Golang_CRUD_API.git
+```
+2. Change Directory to main folder & Download all dependency
+```
+cd Golang_CRUD_API
+go mod download
+```
+3. Run the main.go & api.go
+```
+go run main.go api.go
+```
