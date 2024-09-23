@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"github.com/W-ptra/2FA-Feature/controller"
+	"github.com/W-ptra/2FA-Feature/middleware"
 )
 
 type Server struct{
@@ -30,7 +31,7 @@ func (s *Server) run() error{
 
 	server := http.Server{
 		Addr: s.addr,
-		Handler: router,
+		Handler: middleware.Logger(router),
 	}
 
 	log.Printf("Listening to %v\n",s.addr)

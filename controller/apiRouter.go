@@ -70,6 +70,7 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 	err = service.SendEmail(user.Email,randomNumber)
 	
 	if err != nil{
+		log.Println(err)
 		setRespond(w,r,Message{"Wrong Password, cant send otp"},500)
 		return
 	}
