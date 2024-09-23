@@ -27,40 +27,42 @@ type Otp struct{
 	Code	string			`json:"code"`
 }
 
+type Message struct{
+	Message string
+}
+
+func setRespond(w http.ResponseWriter,r *http.Request,message interface{},status int){
+	w.Header().Set("Content-Type","application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(message)
+}
+
 func PostLogin(w http.ResponseWriter,r *http.Request){
 	body,_ := io.ReadAll(r.Body)
 	defer r.Body.Close()
 
 	var user LoginUser
 	if err := json.Unmarshal(body,&user);err!=nil{
-		http.Error(w,"missing field: name or password",http.StatusBadRequest)
+		setRespond(w,r,Message{"Can't unmarshal to json"},400)
 		return
 	}
 
 	if user.Email == "" || user.Password == ""{
-		http.Error(w,"field email or password is undefined or empty",http.StatusBadRequest)
-		return
-	}
-
-	db,err := database.GetConnection()
-	if err!=nil{
-		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		setRespond(w,r,Message{"field email or password is undefined or empty"},400)
 		return
 	}
 
 	log.Println(user)
 
-	userDB,errors := database.GetUserByEmail(db,user.Email)
-	if errors!=nil{
-		http.Error(w,"something went wrong",http.StatusInternalServerError)
+	userDB,err := database.GetUserByEmail(user.Email)
+	if err!=nil && err.Error() == "record not found"{
+		setRespond(w,r,Message{"User not found"},404)
 		return
 	}
 
 	isMatch := service.ComparePassword(userDB.Password,user.Password)
 	if !isMatch{
-		w.Header().Set("Content-Type","application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"Message":"Wrong Password"})
+		setRespond(w,r,Message{"Wrong Password"},401)
 		return
 	}
 	
@@ -68,27 +70,24 @@ func PostLogin(w http.ResponseWriter,r *http.Request){
 	err = service.SendEmail(user.Email,randomNumber)
 	
 	if err != nil{
-		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		setRespond(w,r,Message{"Wrong Password, cant send otp"},500)
 		return
 	}
 	
 	isOTPExist,_ := database.GetOTP(user.Email)
 	
 	if isOTPExist!=""{
-		w.Header().Set("Content-Type","application/json")
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(map[string]interface{}{"Message":"OTP Already been sent, check your email"})
+		setRespond(w,r,Message{"OTP Already been sent, check your email"},200)
+		return
 	}
 
 	err = database.SetOTP(user.Email,strconv.Itoa(randomNumber))
 	if err != nil{
-		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		setRespond(w,r,Message{"something went wrong, cant set otp"},500)
 		return
 	}
 
-	w.Header().Set("Content-Type","application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{"Message":"OTP has been sent, please chek your email"})
+	setRespond(w,r,Message{"OTP has been sent, please chek your email"},200)
 }
 
 func PostRegister(w http.ResponseWriter,r *http.Request){
@@ -97,17 +96,17 @@ func PostRegister(w http.ResponseWriter,r *http.Request){
 
 	var user RegisterUser
 	if err := json.Unmarshal(body,&user);err!=nil{
-		http.Error(w,"Bad request",http.StatusBadRequest)
+		setRespond(w,r,Message{"cant unmarsal to json"},400)
 		return
 	}
 
 	if  user.Name == "" || user.Email == "" || user.Password == "" || user.ConfirmPassword == ""{
-		http.Error(w,"field name,email,password or confirmPassword is undefined or empty",http.StatusBadRequest)
+		setRespond(w,r,Message{"field name,email,password or confirmPassword is undefined or empty"},400)
 		return
 	}
 
 	if user.Password != user.ConfirmPassword{
-		http.Error(w,"password and confirm password doesn't match",http.StatusBadRequest)
+		setRespond(w,r,Message{"password and confirm password doesn't match"},400)
 		return
 	}
 
@@ -118,15 +117,10 @@ func PostRegister(w http.ResponseWriter,r *http.Request){
 		Email: user.Email,
 		Password: hashedPassword,
 	}
-	db,err := database.GetConnection()
-	if err!=nil{
-		http.Error(w,"something went wrong",http.StatusInternalServerError)
-		return
-	}
 	
-	err = database.CreateNewUser(db,newUser)
+	err := database.CreateNewUser(newUser)
 	if err!=nil{
-		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		setRespond(w,r,Message{"something went wrong, can't create new user"},500)
 		return
 	}
 
@@ -139,37 +133,31 @@ func PostOtp(w http.ResponseWriter,r *http.Request){
 
 	var otp Otp
 	if err:=json.Unmarshal(body,&otp); err!=nil{
-		http.Error(w,"Bad request",http.StatusBadRequest)
+		setRespond(w,r,Message{"can't unmarshal to json"},400)
 		return
 	}
 
 	if otp.Code == ""{
-		http.Error(w,"Bad request",http.StatusBadRequest)
+		setRespond(w,r,Message{"otp code missing/empty"},400)
 		return
 	}
 	log.Println(otp)
 	rdsOTP,err := database.GetOTP(otp.Email)
 	if err != nil{
 		log.Println(err)
-		http.Error(w,"something went wrong",http.StatusInternalServerError)
+		setRespond(w,r,Message{"something went wrong"},500)
 		return
 	}
 	
 	if rdsOTP == ""{
-		w.Header().Set("Content-Type","application/json")
-		w.WriteHeader(http.StatusConflict)
-		json.NewEncoder(w).Encode(map[string]interface{}{"Message":"No OTP been issue with corresponding email, or might expired"})
+		setRespond(w,r,Message{"No OTP been issue with corresponding email, or might expired"},409)
 		return
 	}
 
 	if otp.Code != rdsOTP{
-		w.Header().Set("Content-Type","application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]interface{}{"Message":"Wrong OTP Code"})
+		setRespond(w,r,Message{"OTP Code is incorrect"},401)
 		return
 	}
 
-	w.Header().Set("Content-Type","application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]interface{}{"Message":"OTP Code is Correct,Welcome"})
+	setRespond(w,r,Message{"OTP Code is Correct,Welcome"},200)
 }

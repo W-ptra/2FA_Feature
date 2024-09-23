@@ -7,35 +7,49 @@ import (
 	"gorm.io/driver/postgres"
 )
 
+var postgresConnection *gorm.DB
+
 func GetConnection()(*gorm.DB,error){
-	err := godotenv.Load()
-	if err!=nil{
-		fmt.Println("error loading environment variable",err)
+	if postgresConnection == nil{
+		err := godotenv.Load()
+		if err!=nil{
+			fmt.Println("error loading environment variable",err)
+		}
+	
+		dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=Asia/Shanghai",
+			os.Getenv("DATABASE_HOST"),
+			os.Getenv("DATABASE_USER"),
+			os.Getenv("DATABASE_PASSWORD"),
+			os.Getenv("DATABASE_DB"),
+			os.Getenv("DATABASE_PORT"),
+			os.Getenv("DATABASE_SSLMODE"),
+		)
+		db,err := gorm.Open(postgres.Open(dsn),&gorm.Config{})
+	
+		if err!=nil{
+			return nil,err
+		}
+
+		postgresConnection = db
 	}
 
-	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=Asia/Shanghai",
-		os.Getenv("DATABASE_HOST"),
-		os.Getenv("DATABASE_USER"),
-		os.Getenv("DATABASE_PASSWORD"),
-		os.Getenv("DATABASE_DB"),
-		os.Getenv("DATABASE_PORT"),
-		os.Getenv("DATABASE_SSLMODE"),
-	)
-	db,err := gorm.Open(postgres.Open(dsn),&gorm.Config{})
-
-	if err!=nil{
-		return nil,err
-	}
-
-	return db,nil
+	return postgresConnection,nil
 }
 
-func CreateNewUser(db *gorm.DB,newUser User)error{
+func CreateNewUser(newUser User)error{
+	db,err := GetConnection()
+	if err!=nil{
+		return err
+	}
 	operation := db.Create(&newUser)
 	return operation.Error
 }
 
-func GetUserByEmail(db *gorm.DB,email string)(User,error){
+func GetUserByEmail(email string)(User,error){
+	db,err := GetConnection()
+	if err!=nil{
+		return User{},err
+	}
 	var user User
 	operation := db.First(&user,"Email = ?",email)
 	return user,operation.Error

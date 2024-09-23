@@ -10,22 +10,27 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+var redisConnection *redis.Client
+
 func GetRedisConnection()(*redis.Client,error){
-	err := godotenv.Load()
-	if err!=nil{
-		log.Println("error loading environment variable",err)
+	if redisConnection == nil {
+		err := godotenv.Load()
+		if err!=nil{
+			log.Println("error loading environment variable",err)
+		}
+		rdb := redis.NewClient(&redis.Options{
+			Addr: fmt.Sprintf("%v:%v",os.Getenv("REDIS_HOST"),os.Getenv("REDIS_PORT")),
+			Password: "",
+			DB: 0,
+		})
+		ctx := context.Background()
+		_,err = rdb.Ping(ctx).Result()
+		if err != nil{
+			return nil,err
+		}
+		redisConnection = rdb
 	}
-	rdb := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%v:%v",os.Getenv("REDIS_HOST"),os.Getenv("REDIS_PORT")),
-		Password: "",
-		DB: 0,
-	})
-	ctx := context.Background()
-	_,err = rdb.Ping(ctx).Result()
-	if err != nil{
-		return nil,err
-	}
-	return rdb,nil
+	return redisConnection,nil
 }
 
 func SetOTP(email,otp string)error{

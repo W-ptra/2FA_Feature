@@ -19,8 +19,9 @@ func NewServer(addr string) *Server{
 func (s *Server) run() error{
 	router := http.NewServeMux()
 	fs := http.FileServer(http.Dir("./public"))
-
-	router.Handle("/public/",http.StripPrefix("/public/",fs))
+	
+	router.Handle("/public/",fs)
+	router.HandleFunc("/",controller.RedirectToLogin)	
 	router.HandleFunc("GET /login",controller.GetLogin)	
 	router.HandleFunc("POST /login",controller.PostLogin)
 	router.HandleFunc("GET /register",controller.GetRegister)
@@ -32,6 +33,7 @@ func (s *Server) run() error{
 		Handler: router,
 	}
 
-	log.Printf("Server addr %v",s.addr)
+	log.Printf("Listening to %v\n",s.addr)
+	log.Printf("Open http://localhost:8001/login to proceed further\n")
 	return server.ListenAndServe()
 }
